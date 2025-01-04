@@ -86,88 +86,98 @@ def view_transaction():
 
         selected_month = st.selectbox("Select Month", options=["All"] + list(month_mapping.keys()))
         
+        try:
+            df = pd.read_csv(user_file)
+            df['date'] = pd.to_datetime(df['date'])
+            df['year'] = df['date'].dt.year
+            years = sorted(df['year'].unique())
+            selected_year = st.selectbox("Select Year", years, index=len(years)-1)
+        except Exception as e:
+            st.error("Failed to load transactions from CSV.")
+            return
+
         if st.button("View Transactions"):
             try:
-                with open(user_file, mode='r', encoding='utf-8') as file:
-                    df = pd.read_csv(file)
-                    if not df.empty:
-                        # Convert date column and filter by month first
-                        df["date"] = pd.to_datetime(df["date"], errors='coerce').dt.date
-                        if selected_month != "All":
-                            month_number = month_mapping[selected_month]
-                            df = df[df["date"].apply(lambda x: x.month) == month_number]
+                df = df[df['year'] == selected_year]
+                if selected_month != "All":
+                    month_number = month_mapping[selected_month]
+                    df = df[df["date"].dt.month == month_number]
 
-                        # Process tags for pie chart
-                        df['tags'] = df['tags'].fillna('')
-                        df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
-                        tags_df = df.assign(tags=df['tags'].str.split(',')).explode('tags')
-                        tags_df['tags'] = tags_df['tags'].str.strip()
+                if not df.empty:
+                    df["date"] = df["date"].dt.date
 
-                        case_insensitive_mapping = {k.lower(): v for k, v in tag_mapping.items()}
-                        tags_df['category'] = tags_df['tags'].apply(lambda tag: 
-                            case_insensitive_mapping.get(str(tag).strip().lower(), 'Uncategorized') 
-                            if pd.notna(tag) and tag.strip() != '' else 'Uncategorized')
+                    df['tags'] = df['tags'].fillna('')
+                    df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
+                    tags_df = df.assign(tags=df['tags'].str.split(',')).explode('tags')
+                    tags_df['tags'] = tags_df['tags'].str.strip()
 
-                        category_amounts = tags_df.groupby('category')['amount'].sum()
+                    case_insensitive_mapping = {k.lower(): v for k, v in tag_mapping.items()}
+                    tags_df['category'] = tags_df['tags'].apply(lambda tag: 
+                        case_insensitive_mapping.get(str(tag).strip().lower(), 'Uncategorized') 
+                        if pd.notna(tag) and tag.strip() != '' else 'Uncategorized')
 
-                        if not category_amounts.empty:
-                            fig1 = px.pie(category_amounts, values=category_amounts.values, 
-                                        names=category_amounts.index, 
-                                        title=f"Transaction Amounts by Category - {selected_month}")
-                            fig1.update_layout(
-                                width=1200, height=800,
-                                font=dict(size=18),
-                                title_font_size=18,
-                                legend_font_size=14
-                            )
-                            st.plotly_chart(fig1)
-                        else:
-                            st.info("No categories found for the selected month")
+                    category_amounts = tags_df.groupby('category')['amount'].sum()
 
-                        df = df.rename(columns={'amount': 'amount (INR)'})
-                        df['amount (INR)'] = pd.to_numeric(df['amount (INR)'], errors='coerce').fillna(0).astype(int)
-                        st.table(df)
-                        excel_buffer = BytesIO()
-                        df.to_excel(excel_buffer, index=False, engine='openpyxl')
-                        excel_buffer.seek(0)
-                        st.download_button(
-                            label="Download as Excel",
-                            data=excel_buffer.getvalue(),
-                            file_name=f"transactions_{selected_month}.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    if not category_amounts.empty:
+                        fig1 = px.pie(category_amounts, values=category_amounts.values, 
+                                    names=category_amounts.index, 
+                                    title=f"Transaction Amounts by Category - {selected_month} {selected_year}")
+                        fig1.update_layout(
+                            width=1100, height=700,
+                            font=dict(size=18),
+                            title_font_size=18,
+                            legend_font_size=14
                         )
+                        st.plotly_chart(fig1)
+                    else:
+                        st.info("No categories found for the selected month and year")
 
-                        pdf = FPDF()
-                        pdf.add_page()
-                        pdf.set_font("Arial", "B", 16)
-                        pdf.cell(190, 10, f"Transaction Report - {selected_month}", ln=True, align='C')
-                        pdf.ln(10)
+                    df = df.rename(columns={'amount': 'amount (INR)'})
+                    df['amount (INR)'] = pd.to_numeric(df['amount (INR)'], errors='coerce').fillna(0).astype(int)
+                    st.table(df)
+                    excel_buffer = BytesIO()
+                    df.to_excel(excel_buffer, index=False, engine='openpyxl')
+                    excel_buffer.seek(0)
+                    st.download_button(
+                        label="Download as Excel",
+                        data=excel_buffer.getvalue(),
+                        file_name=f"transactions_{selected_month}_{selected_year}.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
 
-                        pdf.set_font("Arial", "B", 10)
-                        cols = ['Date', 'Description','amount (INR)', 'Category', 'Payment Method']
-                        pdf.set_line_width(0.5)
-                        col_widths = [25, 60, 35, 35, 35]
-                        for i, col in enumerate(cols):
-                            pdf.cell(col_widths[i], 10, col, 1, 0, 'C')
-                        pdf.ln()
+                    pdf = FPDF()
+                    pdf.add_page()
+                    pdf.set_font("Arial", "B", 16)
+                    pdf.cell(190, 10, f"Transaction Report - {selected_month} {selected_year}", ln=True, align='C')
+                    pdf.ln(10)
 
-                        pdf.set_font("Arial", "", 10)
-                        for _, row in df.iterrows():
-                            pdf.cell(col_widths[0], 10, str(row['date']), 1, 0, 'C')
-                            pdf.cell(col_widths[1], 10, str(row['description'])[:55], 1, 0, 'L')
-                            pdf.cell(col_widths[2], 10, str(row['amount (INR)']), 1, 0, 'R')
-                            pdf.cell(col_widths[3], 10, str(row['category']), 1, 0, 'C')
-                            pdf.cell(col_widths[4], 10, str(row['payment_method']), 1, 1, 'C')
+                    pdf.set_font("Arial", "B", 10)
+                    cols = ['Date', 'Description','amount (INR)', 'Category', 'Payment Method']
+                    pdf.set_line_width(0.5)
+                    col_widths = [25, 60, 35, 35, 35]
+                    for i, col in enumerate(cols):
+                        pdf.cell(col_widths[i], 10, col, 1, 0, 'C')
+                    pdf.ln()
 
-                        pdf_buffer = BytesIO()
-                        pdf_buffer.write(pdf.output(dest='S').encode('latin-1'))
-                        pdf_buffer.seek(0)
-                        st.download_button(
-                            label="Download as PDF",
-                            data=pdf_buffer.getvalue(),
-                            file_name=f"transactions_{selected_month}.pdf",
-                            mime="application/pdf"
-                        )
+                    pdf.set_font("Arial", "", 10)
+                    for _, row in df.iterrows():
+                        pdf.cell(col_widths[0], 10, str(row['date']), 1, 0, 'C')
+                        pdf.cell(col_widths[1], 10, str(row['description'])[:55], 1, 0, 'L')
+                        pdf.cell(col_widths[2], 10, str(row['amount (INR)']), 1, 0, 'R')
+                        pdf.cell(col_widths[3], 10, str(row['category']), 1, 0, 'C')
+                        pdf.cell(col_widths[4], 10, str(row['payment_method']), 1, 1, 'C')
+
+                    pdf_buffer = BytesIO()
+                    pdf_buffer.write(pdf.output(dest='S').encode('latin-1'))
+                    pdf_buffer.seek(0)
+                    st.download_button(
+                        label="Download as PDF",
+                        data=pdf_buffer.getvalue(),
+                        file_name=f"transactions_{selected_month}_{selected_year}.pdf",
+                        mime="application/pdf"
+                    )
+                else:
+                    st.warning("No transactions found for the selected month and year!")
             except FileNotFoundError:
                 st.warning("No transactions found!")
 
