@@ -58,17 +58,131 @@ import csv
 from io import BytesIO
 from fpdf import FPDF
 import plotly.express as px
+import pandas as pd
+import plotly.express as px
+import pandas as pd
+import plotly.express as px
+import csv
+from io import BytesIO
+import streamlit as st
+from fpdf import FPDF
+
+import pandas as pd
+import plotly.express as px
+import csv
+from io import BytesIO
+import streamlit as st
+from fpdf import FPDF
 
 def view_transaction():
     try:
         st.markdown("<h3 style='color: white;'>View Transactions</h3>", unsafe_allow_html=True)
         user_file = st.session_state.get("user_file", "user_transactions.csv")
 
-        # Month mapping for the selectbox
+        # Tag mapping to group similar tags into broader categories, including slight spelling variations
+        tag_mapping = {
+    "monthly salary": "Income",
+    "rental income": "Income",
+    "interest income": "Income",
+    "dividend income": "Income",
+    "bonus": "Income",
+    "refund": "Income",
+    "award": "Income",
+    "gift": "Income",
+    "investment": "Investment",
+    "savings": "Investment",
+    "stocks": "Investment",
+    "bonds": "Investment",
+    "mutual funds": "Investment",
+    "crypto": "Investment",
+    "cashback": "Income",
+    "groceries": "Food & Dining",
+    
+    "streaming": "Entertainment",
+    "netflix subscription": "Streaming",
+    "amazon order": "Shopping",
+    "movie tickets": "Entertainment",
+    "fitness": "Health",
+    "yoga classes": "Health",
+    "food": "Food & Dining",
+    "groceries purchase": "Food",
+    "cinema": "Entertainment",
+    "fuel": "Bills",
+    "supermarket": "Shopping",
+    "friends": "Transfer",
+    "snacks and beverages": "Food",
+    "petrol": "Bills",
+    "car emi": "Loans",
+    "electricity bill": "Bills",
+    "home rent": "Housing",
+    "stock dividends": "Investment",
+    "interest from fd": "Investment",
+    "freelance project": "Income",
+    "salary": "Income",
+    "gift from friend": "Income",
+    "charity donation": "Charity",
+    "book purchase": "Education",
+    "mobile recharge": "Bills",
+    "app development payment": "Income",
+    "dinner at restaurant": "Food",
+    "tea break": "Food",
+    "study": "Education",
+    
+    # Indian-specific additional tags
+    "diwali shopping": "Shopping",  # Specific to the Diwali shopping spree
+    "wedding expenses": "Expenses",  # Common for weddings in India
+    "hdfc bank": "Banking",  # Common Indian bank
+    "icici bank": "Banking",  # Common Indian bank
+    "savings deposit": "Investment",  # Related to savings in Indian banks
+    "mutual fund investment": "Investment",  # Common in India for long-term savings
+    "gold purchase": "Shopping",  # Popular in India for investment and gifting
+    "insurance premium": "Bills",  # Insurance-related payments
+    "school fees": "Education",  # Common expense for children in India
+    "medicine purchase": "Health",  # Common in healthcare expenses
+    "mobile data recharge": "Bills",  # Mobile data recharge is a common expense
+    "pension contribution": "Investment",  # Pension schemes in India
+    "tax payment": "Bills",  # Indian tax payments
+    "travel": "Travel",  # For expenses related to trips (could be domestic or international)
+    "hotel stay": "Travel",  # Accommodation expenses for domestic or international travel
+    "train tickets": "Travel",  # Travel-related expenses in India
+    "flight tickets": "Travel",  # Flight bookings for travel
+    "local transport": "Transport",  # Expenses for public or private transport (e.g., Ola, Uber)
+    "auto rickshaw": "Transport",  # Specific to transportation in India
+    "cab fare": "Transport",  # Uber, Ola, or other cab fares in India
+    "gift": "Gift",  # Gifts for various occasions (could be for festivals or birthdays)
+    "pukka meal": "Food & Dining",  # A term used for meals from popular restaurants or dhabas
+    "temple donation": "Charity",  # Donations for religious purposes
+    "pooja expenses": "Charity",  # Common expenses for religious rituals
+    "aadhar card": "Documents",  # For Aadhar card-related services and updates
+    "passport fees": "Documents",  # Passport-related services
+    "domestic help": "Housing",  # Payments for maids, cooks, or other domestic help
+    "rent": "Housing",  # Rent for accommodation in India
+    "landline bill": "Bills",  # Landline telephone bills, though decreasing in use
+    "internet bill": "Bills",  # For broadband internet bills
+    "grocery shopping": "Food & Dining",  # Regular grocery purchases
+    "vegetable purchase": "Food & Dining",  # Specific to buying vegetables in India
+    "fruits purchase": "Food & Dining",  # Specific to buying fruits in India
+    "construction materials": "Housing",  # For home improvement or construction
+    "repair costs": "Housing",  # For home repairs and maintenance
+    "furniture purchase": "Shopping",  # Furniture-related expenses for the home
+    "mobile phone purchase": "Shopping",  # For buying phones in India
+}
+
+
+        # Month mapping to convert month names to month numbers
         month_mapping = {
-            "January": 1, "February": 2, "March": 3, "April": 4, 
-            "May": 5, "June": 6, "July": 7, "August": 8, 
-            "September": 9, "October": 10, "November": 11, "December": 12
+            "January": 1,
+            "February": 2,
+            "March": 3,
+            "April": 4,
+            "May": 5,
+            "June": 6,
+            "July": 7,
+            "August": 8,
+            "September": 9,
+            "October": 10,
+            "November": 11,
+            "December": 12
         }
 
         # Layout with two columns
@@ -76,10 +190,11 @@ def view_transaction():
 
         with col1:
             selected_month = st.selectbox("Select Month", options=["All"] + list(month_mapping.keys()), key="month_select", label_visibility="collapsed")
-            if st.button("View Transactions"):
-                
+            
+            # Read the CSV data for pie chart
             try:
                 user_file = st.session_state.user_file
+
                 with open(user_file, mode='r', encoding='utf-8') as file:
                     df = pd.read_csv(file)
                     if not df.empty:
@@ -87,20 +202,22 @@ def view_transaction():
                         df['tags'] = df['tags'].fillna('')
                         df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
                         tags_df = df.assign(tags=df['tags'].str.split(',')).explode('tags')
-                        tags_df['tags'] = tags_df['tags'].str.strip()
+                        tags_df['tags'] = tags_df['tags'].str.strip().str.lower()  # Convert to lowercase
 
-                        # Group by tags and sum the amounts
-                        tag_amounts = tags_df.groupby('tags')['amount'].sum()
-                        tag_amounts = tag_amounts[tag_amounts.index != '']
-                        
-                        # Display only the first pie chart (Transaction Amounts by Tags)
-                        if not tag_amounts.empty:
-                            st.write("Transaction Amounts by Tags")
-                            fig1 = px.pie(tag_amounts, values=tag_amounts.values, names=tag_amounts.index, title="Transaction Amounts by Tags")
+                        # Map the tags to broader categories, matching with predefined tag_mapping
+                        tags_df['category'] = tags_df['tags'].apply(lambda tag: tag_mapping.get(tag, tag))
+
+                        # Group by the new categories and sum the amounts
+                        category_amounts = tags_df.groupby('category')['amount'].sum()
+
+                        # Display the pie chart for transaction amounts by category
+                        if not category_amounts.empty:
+                            st.write("Transaction Amounts by Category")
+                            fig1 = px.pie(category_amounts, values=category_amounts.values, names=category_amounts.index, title="Transaction Amounts by Category")
                             fig1.update_layout(width=800, height=900)  # Increased dimensions
                             st.plotly_chart(fig1)
                         else:
-                            st.info("No tags found in transactions")
+                            st.info("No categories found in transactions")
 
             except Exception as e:
                 st.warning("No transaction data available for pie chart")
@@ -177,3 +294,4 @@ def view_transaction():
 
     except Exception as e:
         st.error(f"Error viewing transactions: {str(e)}")
+
