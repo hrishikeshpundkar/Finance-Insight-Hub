@@ -1,25 +1,33 @@
 date,description,amount,category,type,payment_method,tags
 2025-01-01,Groceries Purchase,1450.50,Food,Expense,Credit Card,Supermarket
-2025-01-02,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
-2025-01-03,Netflix Subscription,499.00,Entertainment,Expense,UPI,Streaming
-2025-01-05,Petrol,1200.00,Transport,Expense,Debit Card,Fuel
-2025-01-06,Freelance Project,15000.00,Income,Income,Bank Transfer,Freelance
-2025-01-07,Dinner at Restaurant,1800.00,Food,Expense,Cash,Friends
-2025-01-08,Electricity Bill,3000.00,Bills,Expense,Net Banking,Utilities
-2025-01-10,Stock Dividends,2500.00,Investment,Income,Bank Transfer,Passive Income
-2025-01-12,Book Purchase,750.00,Education,Expense,Credit Card,Learning
-2025-01-13,Home Rent,15000.00,Housing,Expense,UPI,Monthly Rent
-2025-01-15,Gift from Friend,2000.00,Gift,Income,Cash,Birthday
-2025-01-17,Amazon Order,2200.00,Shopping,Expense,Credit Card,Online Purchase
-2025-01-18,Yoga Classes,1200.00,Fitness,Expense,Debit Card,Health
-2025-01-20,Movie Tickets,600.00,Entertainment,Expense,UPI,Cinema
-2025-01-22,App Development Payment,25000.00,Income,Income,Bank Transfer,Project
-2025-01-24,Car EMI,10000.00,Loans,Expense,Net Banking,Vehicle
-2025-01-26,Snacks and Beverages,450.00,Food,Expense,Cash,Tea Break
-2025-01-28,Interest from FD,3000.00,Investment,Income,Bank Transfer,Savings
-2025-01-29,Mobile Recharge,399.00,Bills,Expense,UPI,Communication
-2025-01-30,Charity Donation,2000.00,Charity,Expense,Credit Card,Helping
-2025-01-04,sql,1400.0,Income,One-time,Cash,study
-2025-01-04,data,1600.0,Income,One-time,Cash,study
-2025-01-04,data,1600.0,Income,One-time,Cash,study
-2025-01-04,data,1600.0,Income,One-time,Cash,study
+2025-01-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-02-01,Groceries Purchase,1500.00,Food,Expense,Credit Card,Supermarket
+2025-02-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-03-01,Groceries Purchase,1550.00,Food,Expense,Credit Card,Supermarket
+2025-03-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2024-04-01,Groceries Purchase,1600.00,Food,Expense,Credit Card,Supermarket
+2025-04-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-05-01,Groceries Purchase,1650.00,Food,Expense,Credit Card,Supermarket
+2025-05-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-06-01,Groceries Purchase,1700.00,Food,Expense,Credit Card,Supermarket
+2025-06-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-07-01,Groceries Purchase,1750.00,Food,Expense,Credit Card,Supermarket
+2025-07-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-08-01,Groceries Purchase,1800.00,Food,Expense,Credit Card,Supermarket
+2025-08-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-09-01,Groceries Purchase,1850.00,Food,Expense,Credit Card,Supermarket
+2025-09-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-10-01,Groceries Purchase,1900.00,Food,Expense,Credit Card,Supermarket
+2025-10-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-11-01,Groceries Purchase,1950.00,Food,Expense,Credit Card,Supermarket
+2025-11-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-12-01,Groceries Purchase,2000.00,Food,Expense,Credit Card,Supermarket
+2025-12-15,Salary,50000.00,Income,Income,Bank Transfer,Monthly Salary
+2025-01-02,Phone Bill,1200.00,Utilities,Expense,Credit Card,Monthly Bill
+2025-01-03,Internet Bill,999.00,Utilities,Expense,Credit Card,Monthly Bill
+2025-01-05,Restaurant Dinner,2500.00,Food,Expense,Credit Card,Dining Out
+2025-01-07,Gym Membership,1800.00,Health,Expense,Credit Card,Fitness
+2025-01-10,Movie Tickets,500.00,Entertainment,Expense,Credit Card,Movies
+2025-12-28,Year End Bonus,25000.00,Income,Income,Bank Transfer,Bonus
+2025-12-29,New Year Party,5000.00,Entertainment,Expense,Credit Card,Party
+2025-12-30,Car Maintenance,8000.00,Vehicle,Expense,Credit Card,Maintenance

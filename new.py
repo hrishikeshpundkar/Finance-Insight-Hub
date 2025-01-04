@@ -65,7 +65,7 @@ except Exception as e:
     st.error(f"Error setting page config: {str(e)}")
 
 # Display Welcome Message
-st.markdown("<h1 style='text-align: center; color: white;'>Welcome to Finance Insight Hub</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: black;'>Finance Insight Hub</h1>", unsafe_allow_html=True)
 
 # Handle Login/Signup
 if not st.session_state.logged_in:
@@ -80,6 +80,7 @@ if not st.session_state.logged_in:
                     border-radius: 10px;
                     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                     margin: 20px 0;
+                    color: black;
                 }
                 </style>
                 """, unsafe_allow_html=True)
@@ -122,7 +123,6 @@ else:
         if 'user_file' not in st.session_state:
             st.session_state.user_file = create_user_file(st.session_state.login_username)
         user_file = st.session_state.user_file
-        st.write(f"User data file: {user_file}")
         # Money Manager Interaction
         moneymanager()
         # Logout functionality
