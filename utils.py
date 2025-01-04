@@ -4,7 +4,21 @@ import pandas as pd
 from datetime import datetime
 from io import BytesIO
 from fpdf import FPDF
-
+import pandas as pd
+import plotly.express as px
+import streamlit as st
+import pandas as pd
+import csv
+import plotly.express as px
+from io import BytesIO
+from fpdf import FPDF
+import streamlit as st
+import pandas as pd
+import csv
+import plotly.express as px
+from io import BytesIO
+from fpdf import FPDF
+import streamlit as st
 def add_transaction():
     try:
         # Define column layout
@@ -52,18 +66,7 @@ def add_transaction():
     except Exception as e:
         st.error(f"Error adding transaction: {str(e)}")
 
-import pandas as pd
-import csv
-import plotly.express as px
-from io import BytesIO
-from fpdf import FPDF
-import streamlit as st
-import pandas as pd
-import csv
-import plotly.express as px
-from io import BytesIO
-from fpdf import FPDF
-import streamlit as st
+
 
 # Function to view transactions
 def view_transaction():
@@ -184,9 +187,6 @@ def view_transaction():
     except Exception as e:
         st.error(f"Error viewing transactions: {str(e)}")
 
-import pandas as pd
-import plotly.express as px
-import streamlit as st
 
 def format_amount(amount):
     """Formats the amount in Indian numbering style."""

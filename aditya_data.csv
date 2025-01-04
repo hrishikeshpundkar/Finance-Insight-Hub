@@ -31,3 +31,4 @@ date,description,amount,category,type,payment_method,tags
 2025-12-28,Year End Bonus,25000.00,Income,Income,Bank Transfer,Bonus
 2025-12-29,New Year Party,5000.00,Entertainment,Expense,Credit Card,Party
 2025-12-30,Car Maintenance,8000.00,Vehicle,Expense,Credit Card,Maintenance
+2025-01-05,,0.0,Income,One-time,Cash,
