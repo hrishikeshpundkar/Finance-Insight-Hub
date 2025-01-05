@@ -5,7 +5,7 @@ from finance_data import moneymanager
 
 # Initialize session state for login
 if 'login_username' not in st.session_state:
-    st.session_state.login_username = None
+    st.session_state.login_username = ""
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
@@ -89,20 +89,20 @@ if not st.session_state.logged_in:
 
             # Sign In
             with tab1:
-                username = st.text_input("Username", key="login_username")
-                password = st.text_input("Password", type="password", key="login_password")
+                username = st.text_input("Username")
+                password = st.text_input("Password", type="password")
                 if st.button("Login", use_container_width=True):
                     if check_credentials(username, password):
                         st.session_state.logged_in = True
                         st.session_state.login_username = username
-                        st.experimental_rerun()
+                        st.query_params["logged_in"] = True
                     else:
                         st.error("Invalid credentials")
 
             # Sign Up
             with tab2:
-                new_username = st.text_input("New Username", key="signup_username")
-                new_password = st.text_input("New Password", type="password", key="signup_password")
+                new_username = st.text_input("New Username")
+                new_password = st.text_input("New Password", type="password")
                 confirm_password = st.text_input("Confirm Password", type="password")
                 if st.button("Sign Up", use_container_width=True):
                     if new_username and new_password:
@@ -123,11 +123,16 @@ else:
         if 'user_file' not in st.session_state:
             st.session_state.user_file = create_user_file(st.session_state.login_username)
         user_file = st.session_state.user_file
+
+        # Logout functionality at the top
+        col1, col2, col3 = st.columns([1, 8, 1])
+        with col3:
+            if st.button("Logout", key="logout"):
+                st.session_state.logged_in = False
+                st.query_params["logged_in"] = False
+                st.rerun()
+
         # Money Manager Interaction
         moneymanager()
-        # Logout functionality
-        if st.button("Logout", key="logout"):
-            st.session_state.logged_in = False
-            st.experimental_rerun()
     except Exception as e:
         st.error(f"Error in logout process: {str(e)}")
