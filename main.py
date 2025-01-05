@@ -40,7 +40,7 @@ def add_user(username, password):
         if username in users_df['username'].values:
             return False
         new_user = pd.DataFrame({'username': [username], 'password': [password]})
-        users_df = pd.concat([users_df, nest.session_state.login_usernamew_user], ignore_index=True)
+        users_df = pd.concat([users_df, new_user], ignore_index=True)
         users_df.to_csv(CSV_FILE, index=False)
         return True
     except Exception as e:
@@ -118,16 +118,15 @@ else:
     try:
         # On successful login, create or load user file
         if 'user_file' not in st.session_state:
-            st.session_state.user_file = create_user_file()
+            st.session_state.user_file = create_user_file(st.session_state.login_username)
         user_file = st.session_state.user_file
 
         # Logout functionality at the top
         col1, col2, col3 = st.columns([1, 8, 1])
         with col3:
             if st.button("Logout", key="logout"):
-                st.session_state.logged_in = False
-                st.session_state.user_file = None
-                st.experimental_rerun()
+                st.session_state.clear()  # Clears all session state variables
+                st.markdown("<meta http-equiv='refresh' content='0; url=''>", unsafe_allow_html=True)
 
         # Money Manager Interaction
         moneymanager()

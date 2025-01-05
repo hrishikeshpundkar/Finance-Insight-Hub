@@ -1,12 +1,12 @@
 import plotly as py
 import streamlit as st
-from utils import add_transaction, view_transaction, summary,budget
+from utils import add_transaction, view_transaction, summary,budget,portfolio
 def moneymanager():
     st.markdown("---")
     menu = st.sidebar.selectbox(
         "Navigation",
         ["Add Transaction", "View Transactions", "Summary", 
-         "Budget", "Goals", "Reports", "Portfolio"]
+         "Budget","Portfolio","Add Bank Statement"]
     )
     if menu == "Add Transaction":
         add_transaction()
@@ -18,9 +18,6 @@ def moneymanager():
     elif menu == "Budget":
         budget()
     elif menu == "Portfolio":
-        st.markdown("<h3 style='color: white;'>Investment Portfolio</h3>", unsafe_allow_html=True)
-        tab1, tab2 = st.tabs(["Holdings", "Performance"])
-        with tab1:
-            st.write("Your holdings here")
-        with tab2:
-            st.write("Performance metrics here")
+        portfolio()
+    elif menu == "Add Bank Statement":
+        addbankstatement()

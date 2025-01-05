@@ -25,14 +25,14 @@ bonds,Investment
 mutual funds,Investment
 crypto,Investment
 cashback,Income
-groceries,Food & Dining
+groceries,Food
 streaming,Entertainment
 netflix subscription,Streaming
 amazon order,Shopping
 movie tickets,Entertainment
 fitness,Health
 yoga classes,Health
-food,Food & Dining
+food,Food
 groceries purchase,Food
 cinema,Entertainment
 fuel,Bills
@@ -109,7 +109,7 @@ loan top-up,Loans
 loan disbursement,Loans
 loan sanction,Loans
 gift,Gift
-pukka meal,Food & Dining
+pukka meal,Food
 temple donation,Charity
 pooja expenses,Charity
 aadhar card,Documents
@@ -118,8 +118,8 @@ domestic help,Housing
 rent,Housing
 landline bill,Bills
 internet bill,Bills
-grocery shopping,Food & Dining
-fruits purchase,Food & Dining
+grocery shopping,Food
+fruits purchase,Food
 construction materials,Housing
 repair costs,Housing
 furniture purchase,Shopping
