@@ -64,9 +64,9 @@ def view_transaction():
         }
 
         selected_month = st.selectbox("Select Month", options=["All"] + list(month_mapping.keys()))
-        
+        username=st.session_state.login_username
         try:
-            df = pd.read_csv(user_file)
+            df = pd.read_csv("data/username/{user_file}")
             df['date'] = pd.to_datetime(df['date'])
             df['year'] = df['date'].dt.year
             years = sorted(df['year'].unique())
@@ -168,9 +168,6 @@ def format_amount(amount):
     """Formats the amount in Indian numbering style."""
     return '₹{:,.0f}'.format(amount).replace(',', 'X').replace('X', ',', 1) 
 
-import streamlit as st
-import pandas as pd
-import plotly.express as px
 
 def summary():
     st.markdown("<h3 style='color: white;'>Summary</h3>", unsafe_allow_html=True)
@@ -273,6 +270,8 @@ def summary():
 
     except Exception as e:
         st.error(f"Error processing file: {str(e)}")
+
+
 def budget():
     st.markdown("<h3 style='color: white;'>Budget</h3>", unsafe_allow_html=True)
     user_file = st.session_state.get('user_file')
@@ -282,8 +281,7 @@ def budget():
         return
     
     try:
-        # Generate budget file name based on user file
-        budget_file = user_file.replace('.csv', '_budget.csv')
+        # Load data and preprocess
         df = pd.read_csv(user_file)
         df['date'] = pd.to_datetime(df['date'], errors='coerce')
         df['month'] = df['date'].dt.strftime('%B')
@@ -293,91 +291,113 @@ def budget():
         tag_mapping_df = pd.read_csv("tag_mapping.csv")
         tag_mapping = pd.Series(tag_mapping_df['category'].values, index=tag_mapping_df['tag'].str.lower()).to_dict()
         
+        # Dropdown for year and month selection
+        unique_years = sorted(df['year'].unique(), reverse=True)
+        unique_months = df['month'].unique()
+        
+        selected_year = st.selectbox("Select Year", unique_years, index=0)
+        selected_month = st.selectbox("Select Month", unique_months, index=0)
+        
+        # Determine if selected period is the current period
         current_month = pd.to_datetime('today').strftime('%B')
         current_year = pd.to_datetime('today').year
+        is_current_period = (selected_month == current_month and selected_year == current_year)
+        is_previous_period = (selected_year < current_year) or (selected_year == current_year and unique_months.tolist().index(selected_month) < unique_months.tolist().index(current_month))
         
-        # Load existing budget if available
+        # Filter data for selected month and year
+        current_df = df[(df['month'] == selected_month) & (df['year'] == selected_year)]
+        current_df = current_df.explode('tags')
+        current_df['tags'] = current_df['tags'].str.strip().str.lower()
+        current_df['category'] = current_df['tags'].map(tag_mapping).fillna('Uncategorized')
+        
+        # Exclude "Income" category
+        current_df = current_df[current_df['category'] != 'Income']
+        
+        # Use a month- and year-specific budget file
+        budget_file = f"{selected_year}_{selected_month}_budget.csv"
+        
+        st.write(f"### Budget Overview for {selected_month} {selected_year}")
+        
+        # Load existing budgets
         try:
             budget_df = pd.read_csv(budget_file)
             existing_budgets = dict(zip(budget_df['Category'], budget_df['Budget']))
         except FileNotFoundError:
             existing_budgets = {}
-            
-        # Filter for current month and year
-        current_df = df[(df['month'] == current_month) & (df['year'] == current_year)]
-        current_df = current_df.explode('tags')
-        current_df['tags'] = current_df['tags'].str.strip().str.lower()
-        current_df['category'] = current_df['tags'].map(tag_mapping).fillna('Uncategorized')
         
-        # Budget settings
-        st.write("### Set Budget")
-        budget_settings = {}
-        for category in current_df['category'].unique():
-            default_value = existing_budgets.get(category, 0.0)
-            budget_settings[category] = st.number_input(
-                f"Budget for {category}",
-                min_value=0.0,
-                value=float(default_value),
-                step=100.0
-            )
-            
-        if st.button("Save Budget"):
-            budget_data = pd.DataFrame({
-                'Category': list(budget_settings.keys()),
-                'Budget': list(budget_settings.values())
-            })
-            budget_data.to_csv(budget_file, index=False)
-            st.success("Budget saved successfully!")
-            
-        st.write("### Budget Overview")
+        # Budget overview (read-only for previous periods)
         category_totals = current_df.groupby('category')['amount'].sum()
         budget_overview = pd.DataFrame({
             'Category': category_totals.index,
-            'Spent': category_totals.values,
-            'Budget': [budget_settings[category] for category in category_totals.index],
+            'Spent': category_totals.values.astype(int),
+            'Budget': [int(existing_budgets.get(category, 0.0)) for category in category_totals.index],
         })
         budget_overview['Remaining'] = budget_overview['Budget'] - budget_overview['Spent']
+        budget_overview['Status'] = budget_overview['Remaining'].apply(lambda x: 'Within Budget' if x >= 0 else 'Exceeding Budget')
         
-        # Display budget table
+        # Display Budget Overview
+        st.write("### Budget Overview")
+
         st.table(budget_overview.round(2))
         
-        # Create columns for pie charts (2 columns, showing up to 10 categories)
-        categories = list(budget_overview.index)
-        num_categories = len(categories)
+        # Show pie charts
+        st.write("### Budget Usage")
+        budget_overview['Color'] = budget_overview['Status'].map({'Within Budget': 'green', 'Exceeding Budget': 'red'})
+        
+        # Layout for pie charts in columns
         charts_per_row = 2
-        # Get all tags for each category
-        tag_by_category = {}
-        for category in categories:
-            category_tags = current_df[current_df['category'] == category]['tags'].unique()
-            tag_by_category[category] = ', '.join(filter(None, category_tags))
-
-        for i in range(0, min(10, num_categories), charts_per_row):
+        categories = budget_overview['Category'].unique()
+        for i in range(0, len(categories), charts_per_row):
             cols = st.columns(charts_per_row)
             for j in range(charts_per_row):
-                    if i + j < min(10, num_categories):
-                        category = categories[i + j]
-                        with cols[j]:
-                            # Create pie chart for each category
-                            data = pd.DataFrame({
-                                'Type': ['Spent', 'Remaining'],
-                                'Amount': [
-                                    budget_overview.loc[category, 'Spent'],
-                                    max(0, budget_overview.loc[category, 'Remaining'])
-                                ]
-                            })
-                            fig = px.pie(
-                                data,
-                                values='Amount',
-                                names='Type',
-                                title=f"{category} Budget Usage<br><sub>Tags: {tag_by_category[category]}</sub>"
+                if i + j < len(categories):
+                    category = categories[i + j]
+                    row = budget_overview[budget_overview['Category'] == category].iloc[0]
+                    
+                    # Create pie chart for the current category
+                    fig = px.pie(
+                        names=['Spent', 'Remaining'],
+                        values=[row['Spent'], max(0, row['Remaining'])],
+                        color=['Spent', 'Remaining'],
+                        color_discrete_map={'Spent': row['Color'], 'Remaining': 'gray'},
+                        hole=0.5,
+                        title=f"{row['Category']} Budget Usage<br><sub>Status: {row['Status']}</sub>"
+                    )
+                    fig.update_layout(
+                        annotations=[
+                            dict(
+                                text=f"<b>{row['Category']}</b>",
+                                x=0.5,
+                                y=0.5,
+                                font_size=14,
+                                showarrow=False
                             )
-                            fig.update_layout(
-                                width=400,
-                                height=400,
-                                showlegend=True,
-                                title_font_size=14
-                            )
-                            st.plotly_chart(fig)
+                        ],
+                        showlegend=False,
+                        width=350,
+                        height=350
+                    )
+                    cols[j].plotly_chart(fig)
+        
+        # Only allow budget input for the current month
+        if is_current_period:
+            st.write("### Set Budget")
+            budget_settings = {}
+            for category in current_df['category'].unique():
+                default_value = existing_budgets.get(category, 0.0)
+                budget_settings[category] = float(st.text_input(
+                    f"Budget for {category}",
+                    value=str(default_value)
+                ))
+            if st.button("Save Budget"):
+                budget_data = pd.DataFrame({
+                    'Category': list(budget_settings.keys()),
+                    'Budget': list(budget_settings.values())
+                })
+                budget_data.to_csv(f"user_folder/{budget_file}", index=False)
+                st.success("Budget saved successfully!")
+        elif is_previous_period:
+            st.warning("Budget settings for previous months are locked. You can only view the overview.")
     
     except Exception as e:
         st.error(f"Error processing budget: {str(e)}")

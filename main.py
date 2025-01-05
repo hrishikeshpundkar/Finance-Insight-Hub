@@ -3,16 +3,19 @@ import pandas as pd
 import os
 from finance_data import moneymanager
 
-# Initialize session state for login
+# Initialize session state variables
 if 'login_username' not in st.session_state:
     st.session_state.login_username = ""
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 
-# CSV file for storing users
-CSV_FILE = "users.csv"
+# Constants
+BASE_DIR = "data"
+CSV_FILE = os.path.join(BASE_DIR, "users.csv")
 
-# Load users from CSV
+# Ensure base directory exists
+os.makedirs(BASE_DIR, exist_ok=True)
+
 def load_users():
     try:
         return pd.read_csv(CSV_FILE)
@@ -23,7 +26,6 @@ def load_users():
         st.error(f"Error loading users: {str(e)}")
         return pd.DataFrame(columns=['username', 'password'])
 
-# Check if credentials are valid
 def check_credentials(username, password):
     try:
         users_df = load_users()
@@ -32,23 +34,23 @@ def check_credentials(username, password):
         st.error(f"Error checking credentials: {str(e)}")
         return False
 
-# Add a new user
 def add_user(username, password):
     try:
         users_df = load_users()
         if username in users_df['username'].values:
             return False
         new_user = pd.DataFrame({'username': [username], 'password': [password]})
-        users_df = pd.concat([users_df, new_user], ignore_index=True)
+        users_df = pd.concat([users_df, nest.session_state.login_usernamew_user], ignore_index=True)
         users_df.to_csv(CSV_FILE, index=False)
         return True
     except Exception as e:
         st.error(f"Error adding user: {str(e)}")
         return False
 
-# Create a user file for storing user transactions
 def create_user_file(username):
-    user_file = f"{username}_data.csv"
+    user_dir = os.path.join(BASE_DIR, username)
+    os.makedirs(user_dir, exist_ok=True)
+    user_file = os.path.join(user_dir, "data.csv")
     try:
         if not os.path.exists(user_file):
             df = pd.DataFrame(columns=['date', 'description', 'amount', 'category', 'type', 'payment_method', 'tags'])
@@ -58,16 +60,13 @@ def create_user_file(username):
         st.error(f"Error creating user file: {str(e)}")
         return None
 
-# Set up page configuration
 try:
     st.set_page_config(page_title="Finance Insight Hub", layout="wide")
 except Exception as e:
     st.error(f"Error setting page config: {str(e)}")
 
-# Display Welcome Message
 st.markdown("<h1 style='text-align: center; color: white;'>Finance Insight Hub</h1>", unsafe_allow_html=True)
 
-# Handle Login/Signup
 if not st.session_state.logged_in:
     try:
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -95,7 +94,6 @@ if not st.session_state.logged_in:
                     if check_credentials(username, password):
                         st.session_state.logged_in = True
                         st.session_state.login_username = username
-                        st.query_params["logged_in"] = True
                     else:
                         st.error("Invalid credentials")
 
@@ -116,12 +114,11 @@ if not st.session_state.logged_in:
                         st.error("Please fill all fields")
     except Exception as e:
         st.error(f"Error in login interface: {str(e)}")
-
 else:
     try:
         # On successful login, create or load user file
         if 'user_file' not in st.session_state:
-            st.session_state.user_file = create_user_file(st.session_state.login_username)
+            st.session_state.user_file = create_user_file()
         user_file = st.session_state.user_file
 
         # Logout functionality at the top
@@ -129,8 +126,8 @@ else:
         with col3:
             if st.button("Logout", key="logout"):
                 st.session_state.logged_in = False
-                st.query_params["logged_in"] = False
-                st.rerun()
+                st.session_state.user_file = None
+                st.experimental_rerun()
 
         # Money Manager Interaction
         moneymanager()
