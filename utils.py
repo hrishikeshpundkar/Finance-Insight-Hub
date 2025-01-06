@@ -415,7 +415,7 @@ def budget():
                 names=['Spent', 'Remaining'],
                 values=[row['Spent'], max(0, row['Remaining'])],
                 color=['Spent', 'Remaining'],
-                color_discrete_map={'Spent': row['Color'], 'Remaining': 'gray'},
+                color_discrete_map={'Spent': row['Color'], 'Remaining': 'red'},
                 hole=0.5,
                 title=f"{row['Category']} Budget Usage<br><sub>Status: {row['Status']}</sub>"
             )
