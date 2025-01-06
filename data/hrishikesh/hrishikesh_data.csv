@@ -2,3 +2,7 @@ date,description,amount,category,transaction_type,payment_method,tags
 2025-01-05,,1400.0,Income,Education,Cash,study
 2025-01-05,for sql course,13400,Income,Education,Cash,study
 2025-01-05,banana,1223,Income,Food & Dining,UPI,groceries
+2025-01-05,milk,120,Income,Food,Cash,food
+2025-01-05,food,123000,Income,Income,Cash,refund
+2025-01-06,oss,2000,Income,Food,Cash,food
+2025-01-06,oss,2000,Income,Food,Cash,food

@@ -6,7 +6,7 @@ def moneymanager():
     menu = st.sidebar.selectbox(
         "Navigation",
         ["Add Transaction", "View Transactions", "Summary", 
-         "Budget","Portfolio","Add Bank Statement"]
+         "Budget","Portfolio","Add Bank Statement", "Help & support"]
     )
     if menu == "Add Transaction":
         add_transaction()
@@ -21,3 +21,5 @@ def moneymanager():
         portfolio()
     elif menu == "Add Bank Statement":
         addbankstatement()
+    elif menu == "Help & support":
+        st.markdown("Contact Us\nFashnear Technologies Private Limited,\nCIN: U74900KA2015PTC082263rd \nFloor, Wing-E, Helios Business Park,Kadubeesanahalli Village,\n Varthur Hobli, Outer Ring Road Bellandur,\n Bangalore, Bangalore South,\n Karnataka, India,\n 560103E-\nmail address: query@meesho.com© \n2015-2025 Meesho.com ")
